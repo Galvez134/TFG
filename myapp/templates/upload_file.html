@@ -1,0 +1,11 @@
+
+{% extends "user_profile_template.html" %}
+
+{% block content %}
+    <h1>Upload File. User: {{ username }} Project: {{ selectedProject }}</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_table }}
+        <button type="submit">Cargar Archivo</button>
+    </form>
+{% endblock %}

@@ -1,0 +1,14 @@
+
+{% extends "user_profile_template.html" %}
+
+{% block content %}
+    <h1>Create new project for {{ username }}</h1>
+    <form method="post" action="{% url 'new_project' %}">
+        {% csrf_token %}
+        <h2>Create Project</h2>
+        <label for="projectName">Name of the project:</label>
+        <input type="text" id="projectName" name="projectName" required>
+
+        <button type="submit">Create</button>
+    </form>
+{% endblock %}

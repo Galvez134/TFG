@@ -1,0 +1,67 @@
+{% extends "user_profile_template.html" %}
+
+{% block content %}
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>My Lists</title>
+        <style>
+            .column {
+                float: left;
+                width: 20%;
+                padding: 10px;
+            }
+        </style>
+    </head>
+    <h2>User: {{ username }}</h2>
+    <h2>Project selected: {{ selectedProject }}</h2>
+    <h3>Project data:</h3>
+
+    <form method="get" action="{% url 'show_papers_stats' %}"></form>
+    <ul id="projectList">
+        <div class="column">
+            <h4>Types</h4>
+            <ul>
+                {% for type in types %}
+                    <li>{{ type }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="column">
+            <h4>Papers Counts</h4>
+            <ul>
+                {% for count in papers_counts %}
+                    <li>{{ count }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="column">
+            <h4>Citation sum</h4>
+            <ul>
+                {% for item in citations_sum %}
+                    <li>{{ item }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="column">
+            <h4>Citation mean</h4>
+            <ul>
+                {% for item in citations_mean %}
+                    <li>{{ item }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="column">
+            <h4>Geometric mean</h4>
+            <ul>
+                {% for item in geometric_mean %}
+                    <li>{{ item }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <h4>Total mean: {{ total_mean }}</h4>
+
+    </ul>
+
+{% endblock %}
