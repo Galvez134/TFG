@@ -7,46 +7,33 @@ def procesar_datos_informes(file):
     esta_en_bloque = False
     # Variable que controla si la linea empieza por espacios
     empieza_espacios = False
-
     file_is_valid = False
     contador_linea = 0
     datos_dict = {}
 
     # Cambiar formato del archivo
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-
         temp_file.write(file.read())
-
         temp_file_path = temp_file.name
 
     # Abre el archivo en modo lectura
     with open(temp_file_path, 'r') as archivo:
-
         # Itera sobre las líneas del archivo
         for linea in archivo:
             contador_linea+=1
-
-            #print("linea " + str(contador_linea) + " " + linea + "\n")
-
             # En la primera linea comprobamos que el archivo es valido
             if contador_linea == 1:
-                
                 # almacenamos los dos primeros caracteres de la linea actual
                 primeros_dos_chars = linea[1] + linea[2]
-
-                #print(primeros_dos_chars)
-
                 # Si los primeros dos chars son FN el consideramos el formato del archivo valido
                 if primeros_dos_chars == "FN":
                     file_is_valid = True
-
             # Si el archivo es valido
             if file_is_valid:
                 # Saltamos las dos primeras lineas del archivo y comprobamos que la linea tiene al menos 2 caracteres
                 if contador_linea > 2 and len(linea)>1:
                     # almacenamos los dos primeros caracteres de la linea actual
                     primeros_dos_chars = linea[0] + linea[1]
-
                     # Si empieza por PT es el inicio de un bloque
                     if primeros_dos_chars == "PT":
                         esta_en_bloque = True

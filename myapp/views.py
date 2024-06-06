@@ -37,22 +37,19 @@ def index(request):
 class customProfileView:
 
     def upload_file(request):
+        if customProfileView.haveProject == False:
+            return render(request, 'no_selected_project.html', {'username': customProfileView.username})
+        
         if request.method == 'POST':
-
             form = UploadFileForm(request.POST, request.FILES)
-
             if form.is_valid():
                 # Obtener archivo
                 file = form.cleaned_data["file"]
-
                 raw_dict, dict_paises, dict_univ, file_is_valid, dict_times_cited, dict_publish_year, dict_keywords = procesar_datos_informes(file)
-
                 # si el archivo es valido lo insertamos en la base de datos
                 if file_is_valid: 
-
                     # Para cada Paper
                     for i in raw_dict:
-
                         # Abrir conexión con la base de datos
                         mydb = mysql.connector.connect(
                             host="localhost",
@@ -63,9 +60,7 @@ class customProfileView:
                         mycursor = mydb.cursor()
                         
                         tipo = "NULL"
-
                         if i in dict_univ:
-
                             if(len(dict_univ[i]) == 1 ):
                                 tipo = "LOCAL"
                             elif(len(dict_paises[i]) == 1):
@@ -105,7 +100,6 @@ class customProfileView:
         if request.method == 'GET':
             form = LoginForm(request.GET)
             if form.is_valid():
-                
                 # Abrir conexión con la base de datos
                 mydb = mysql.connector.connect(
                     host="localhost",
@@ -113,9 +107,7 @@ class customProfileView:
                     password="passtest",
                     database="baseDeDatosTFG"
                     )
-                
                 mycursor = mydb.cursor()
-
                 customProfileView.username = form.cleaned_data["username"]
                 password = form.cleaned_data["password"]
 
@@ -124,10 +116,8 @@ class customProfileView:
                     sql = "SELECT * FROM Users WHERE username = %s AND password = %s"
                     val = (customProfileView.username, password)
                     mycursor.execute(sql, val)
-
                     # Obtener el usuario de la consulta
                     user = mycursor.fetchone()
-                    # print(user)
 
                     # Si ha recibido el usuario
                     if user:
@@ -136,16 +126,12 @@ class customProfileView:
                             sql = "SELECT ProjectName,Project_id FROM Projects WHERE Username = %s"
                             val = (customProfileView.username,)
                             mycursor.execute(sql,val)
-
                             # Obtener el resultado de la consulta
                             projectName_rows = mycursor.fetchall()
-
                             # Extracción de elementos y creación de la nueva lista
                             customProfileView.project_names = [elemento[0] for elemento in projectName_rows]
-
                             # Extracción de elementos y creación de la nueva lista
                             customProfileView.project_ids = [elemento[1] for elemento in projectName_rows]
-
                             # Cerrar conexión con la base de datos
                             mycursor.close()
                             mydb.close()
@@ -177,7 +163,6 @@ class customProfileView:
         if request.method == 'POST':
             form = CreateProjectForm(request.POST)
             if form.is_valid():
-                
                 # Abrir conexión con la base de datos
                 mydb = mysql.connector.connect(
                     host="localhost",
@@ -185,9 +170,7 @@ class customProfileView:
                     password="passtest",
                     database="baseDeDatosTFG"
                     )
-                
                 mycursor = mydb.cursor()
-
                 projectName = form.cleaned_data["projectName"]
 
                 try:
@@ -195,10 +178,8 @@ class customProfileView:
                     val = (projectName, customProfileView.username)
                     mycursor.execute(sql, val)
                     mydb.commit()
-
                 except mysql.connector.Error as err:
                     print(f"Error: {err}")
-
                 row = mycursor.fetchone()
 
                 # Si no hay resultados
@@ -219,13 +200,10 @@ class customProfileView:
                         sql = "SELECT ProjectName,Project_id FROM Projects WHERE Username = %s"
                         val = (customProfileView.username,)
                         mycursor.execute(sql,val)
-
                         # Obtener el resultado de la consulta
                         projectName_rows = mycursor.fetchall()
-
                         # Extracción de elementos y creación de la nueva lista
                         customProfileView.project_names = [elemento[0] for elemento in projectName_rows]
-
                         # Extracción de elementos y creación de la nueva lista
                         customProfileView.project_ids = [elemento[1] for elemento in projectName_rows]
 
@@ -310,7 +288,6 @@ class customProfileView:
 
 
     def update_papers_stats(request):
-
         # Abrir conexión con la base de datos
         mydb = mysql.connector.connect(
             host="localhost",
@@ -318,11 +295,8 @@ class customProfileView:
             password="passtest",
             database="baseDeDatosTFG"
             )
-        
         mycursor = mydb.cursor()
-
-        try:
-                                                            
+        try:                                          
             # Consulta SQL borrar las estadísticas anteriores
             sql = "DELETE FROM Data_papers WHERE Project_id = %s"
             val = (str(customProfileView.selectedProjectID),)
@@ -531,33 +505,24 @@ class customProfileView:
 
             row = mycursor.fetchone()
 
-            types = []
-            papers_counts = []
-            citations_sum = []
-            citations_mean = []
-            geometric_mean = []
+            paper_stats = []
             total_papers_count = 0
             total_citations_sum = 0
 
+
             while row:
-                print(row)
-                types.append(row[1])
-                papers_counts.append(row[2])
                 total_papers_count = total_papers_count + int(row[2])
-                citations_sum.append(row[3])
                 total_citations_sum = total_citations_sum + int(row[3])
-                citations_mean.append(row[4])
-                geometric_mean.append(row[5])
-                
+
+                paper_stats.append({'type':row[1],'paper_count':row[2], 'citation_sum':row[3], 'citations_mean':row[4], 'geometric_mean':row[5]})
+
                 row = mycursor.fetchone()
             
             
             total_mean = total_citations_sum / total_papers_count
 
 
-            return render(request, 'show_papers_stats.html', {'username': customProfileView.username, 'selectedProject': customProfileView.selectedProject, 
-                                                         'types': types, 'papers_counts': papers_counts, 'citations_sum': citations_sum, 'citations_mean': citations_mean,
-                                                         'geometric_mean': geometric_mean, 'total_mean': total_mean})
+            return render(request, 'show_papers_stats.html', {'username': customProfileView.username, 'selectedProject': customProfileView.selectedProject, 'total_mean': total_mean, 'paper_stats':paper_stats})
         else:
             return render(request, 'no_selected_project.html', {'username': customProfileView.username})
     
